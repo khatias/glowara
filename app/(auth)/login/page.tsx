@@ -1,11 +1,10 @@
-import React from 'react'
-import { SignupForm } from '@/components/auth/signupForm'
+import { LoginForm } from '@/components/auth/loginForm'
 import { Suspense } from 'react'
 function Page() {
   return (
     <div>
       <Suspense fallback={<div>იტვირთება...</div>}>
-        <SignupForm />
+        <LoginForm />
       </Suspense>
     </div>
   )
