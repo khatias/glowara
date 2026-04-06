@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
+import { Scissors, User } from "lucide-react";
+import clsx from "clsx";
 import { signupAction, type ActionState } from "@/lib/auth/action";
 import {
   Card,
@@ -20,8 +22,33 @@ import { FormMessage } from "./FormMessage";
 
 const initialState: ActionState = { success: false };
 
+type Role = "specialist" | "client";
+
+const roles: {
+  value: Role;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}[] = [
+  {
+    value: "specialist",
+    icon: <Scissors className="w-6 h-6" />,
+    title: "სპეციალისტი",
+    description: "ვმართავ ბიზნესს",
+  },
+  {
+    value: "client",
+    icon: <User className="w-6 h-6" />,
+    title: "კლიენტი",
+    description: "ვეძებ სპეციალისტს",
+  },
+];
+
 export function SignupForm() {
   const [state, formAction] = useActionState(signupAction, initialState);
+  const [selectedRole, setSelectedRole] = useState<Role>(
+    (state.values?.role as Role) ?? "specialist",
+  );
 
   return (
     <Card className="w-full max-w-md mx-auto mt-10">
@@ -31,12 +58,42 @@ export function SignupForm() {
       </CardHeader>
 
       <CardContent>
-        {/* Disable form after success so user can't re-submit */}
         <form action={formAction} className="space-y-5">
           <FormMessage success={state.success} message={state.message} />
 
           {!state.success && (
             <>
+              {/* Role selector */}
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-3">
+                  {roles.map((role) => (
+                    <button
+                      key={role.value}
+                      type="button"
+                      onClick={() => setSelectedRole(role.value)}
+                      className={clsx(
+                        "flex flex-col items-center gap-2 rounded-xl border-2 px-4 py-4 text-center transition-all",
+                        selectedRole === role.value
+                          ? "border-primary bg-primary/5 text-primary"
+                          : "border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700",
+                      )}
+                    >
+                      {role.icon}
+                      <div>
+                        <div className="font-semibold text-sm">
+                          {role.title}
+                        </div>
+                        <div className="text-[11px] text-gray-400 mt-0.5 leading-tight">
+                          {role.description}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+                {/* Hidden field that gets submitted */}
+                <input type="hidden" name="role" value={selectedRole} />
+              </div>
+
               <div className="space-y-1">
                 <Label htmlFor="fullName">სახელი და გვარი</Label>
                 <Input
@@ -59,7 +116,6 @@ export function SignupForm() {
                   autoComplete="email"
                   required
                   defaultValue={state.values?.email ?? ""}
-
                 />
                 <FieldError message={state.errors?.email} />
               </div>
